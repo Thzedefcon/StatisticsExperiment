@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS1520 — Cognitive Study</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:16px;line-height:1.6}
+.screen{display:none}
+.screen.active{display:block}
+
+/* progress */
+#progress-bar-wrap{position:fixed;top:0;left:0;right:0;height:4px;background:#ddd;z-index:99}
+#progress-bar{height:4px;background:#4f46e5;width:0;transition:width 0.3s}
+
+/* layout */
+.wrap{max-width:600px;margin:0 auto;padding:40px 20px 80px}
+h1{font-size:28px;font-weight:700;margin-bottom:8px}
+h2{font-size:22px;font-weight:600;margin-bottom:6px}
+.sub{color:#666;font-size:15px;margin-bottom:28px}
+.phase{font-size:12px;color:#4f46e5;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px}
+
+/* cards */
+.card{background:#fff;border:1px solid #e2e2e2;border-radius:12px;padding:20px;margin-bottom:14px}
+.field-label{font-size:14px;font-weight:600;margin-bottom:6px}
+.field-hint{font-size:12px;color:#888;margin-bottom:8px}
+
+/* inputs */
+input[type=text],input[type=number],select{width:100%;border:1px solid #ddd;border-radius:8px;padding:10px 14px;font-size:15px;font-family:inherit;outline:none;background:#fafafa}
+input:focus,select:focus{border-color:#4f46e5}
+select{cursor:pointer}
+
+/* radio */
+.radio-opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #e2e2e2;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;background:#fafafa}
+.radio-opt:hover{border-color:#4f46e5}
+.radio-opt.selected{border-color:#4f46e5;background:#eef2ff}
+.rdot{width:16px;height:16px;border:2px solid #bbb;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.radio-opt.selected .rdot{border-color:#4f46e5;background:#4f46e5}
+.radio-opt.selected .rdot::after{content:'';width:5px;height:5px;background:#fff;border-radius:50%;display:block}
+.radio-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.radio-grid .radio-opt{margin-bottom:0}
+
+/* buttons */
+.btn{display:inline-block;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:500;font-family:inherit;cursor:pointer;border:none}
+.btn-primary{background:#4f46e5;color:#fff}
+.btn-primary:hover{background:#4338ca}
+.btn-outline{background:#fff;color:#4f46e5;border:1px solid #4f46e5}
+.err{color:#dc2626;font-size:13px;margin-top:8px;display:none}
+
+/* test box */
+.test-box{background:#fff;border:1px solid #e2e2e2;border-radius:12px;padding:32px 24px;text-align:center;min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.instr{color:#666;font-size:14px;max-width:380px;line-height:1.6}
+.countdown{font-size:52px;font-weight:700;color:#4f46e5}
+
+/* memory */
+.mem-seq{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.mem-digit{width:52px;height:52px;border-radius:10px;background:#eef2ff;border:2px solid #4f46e5;font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#4f46e5}
+.mem-inputs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.mem-inp{width:48px;height:48px;border-radius:8px;border:1.5px solid #ddd;font-size:20px;font-weight:700;text-align:center;outline:none;background:#fafafa}
+.mem-inp:focus{border-color:#4f46e5}
+.feedback{font-size:13px;padding:8px 14px;border-radius:8px;margin-top:4px}
+.fb-good{background:#dcfce7;color:#166534}
+.fb-bad{background:#fee2e2;color:#991b1b}
+
+/* round dots */
+.round-dots{display:flex;gap:8px;margin-top:12px}
+.rdot-round{width:28px;height:6px;border-radius:3px;background:#ddd}
+.rdot-round.done{background:#4f46e5}
+
+/* reaction */
+#rt-circle{width:140px;height:140px;border-radius:50%;background:#f0f0f0;border:2px solid #ddd;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:#888;user-select:none;transition:background 0.1s,border-color 0.1s}
+#rt-circle.go{background:#ef4444;border-color:#ef4444;color:#fff;font-weight:600}
+#rt-circle.waiting{background:#fef9c3;border-color:#ca8a04;color:#92400e}
+.rt-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.rt-chip{background:#f0f0f0;border-radius:6px;padding:5px 12px;font-size:12px;color:#555}
+.rt-avg{font-size:44px;font-weight:700;color:#ef4444}
+
+/* pattern */
+.pat-seq{font-size:22px;font-weight:700;letter-spacing:0.06em;color:#4f46e5;margin:4px 0}
+.pat-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:300px}
+.pat-cell{border-radius:8px;background:#fafafa;border:1.5px solid #ddd;padding:14px;font-size:18px;cursor:pointer;text-align:center}
+.pat-cell:hover{border-color:#4f46e5}
+.pat-cell.correct{border-color:#16a34a;background:#dcfce7}
+.pat-cell.wrong{border-color:#dc2626;background:#fee2e2}
+.q-row{display:flex;justify-content:space-between;width:100%;font-size:12px;color:#888}
+
+/* results */
+.results-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px}
+.res-card{background:#fff;border:1px solid #e2e2e2;border-radius:10px;padding:16px}
+.res-label{font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:#888;margin-bottom:4px}
+.res-val{font-size:28px;font-weight:700}
+.res-sub{font-size:12px;color:#888}
+.c-purple{color:#4f46e5}
+.c-red{color:#ef4444}
+.c-green{color:#16a34a}
+.c-amber{color:#d97706}
+
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{text-align:left;color:#888;font-weight:500;padding:7px 10px;border-bottom:1px solid #eee;font-size:11px;text-transform:uppercase;letter-spacing:0.06em}
+.data-table td{padding:8px 10px;border-bottom:1px solid #f5f5f5;font-family:monospace}
+.data-table tr:last-child td{border-bottom:none}
+.tier-low{background:#dcfce7;color:#166534;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.tier-med{background:#eef2ff;color:#3730a3;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.tier-high{background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.copy-btn{background:#f5f5f0;border:1px solid #ddd;border-radius:7px;padding:7px 16px;font-size:13px;font-family:monospace;cursor:pointer;margin-top:10px}
+.copy-btn:hover{border-color:#4f46e5;color:#4f46e5}
+.copy-ok{font-size:12px;color:#16a34a;margin-top:6px;display:none}
+.thank-box{background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:18px;text-align:center;font-size:14px;color:#3730a3;margin-top:14px;line-height:1.7}
+
+/* landing steps */
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px}
+.step{background:#fff;border:1px solid #e2e2e2;border-radius:8px;padding:10px 16px;font-size:13px;color:#555;display:flex;align-items:center;gap:8px}
+.step-n{background:#eef2ff;color:#4f46e5;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<!-- LANDING -->
+<div id="s-landing" class="screen active">
+<div class="wrap" style="padding-top:80px;text-align:center">
+  <div style="font-size:12px;color:#4f46e5;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px">CS1520 · Group Experiment</div>
+  <h1 style="font-size:32px;margin-bottom:10px">Social Media &amp;<br>Cognitive Ability</h1>
+  <p class="sub" style="max-width:420px;margin:0 auto 32px">A short study on whether social media screen time is linked to cognitive performance. Takes about 5–8 minutes.</p>
+  <div class="steps" style="justify-content:center">
+    <div class="step"><span class="step-n">1</span>Survey</div>
+    <div class="step"><span class="step-n">2</span>Memory</div>
+    <div class="step"><span class="step-n">3</span>Reaction</div>
+    <div class="step"><span class="step-n">4</span>Patterns</div>
+  </div>
+  <button class="btn btn-primary" onclick="goTo('s-survey')">Begin Study →</button>
+  <p style="margin-top:12px;font-size:13px;color:#999">Anonymous · Student ID only · ~5–8 minutes</p>
+</div>
+</div>
+
+<!-- SURVEY -->
+<div id="s-survey" class="screen">
+<div class="wrap">
+  <div class="phase">Phase 1 of 4</div>
+  <h2>Background Survey</h2>
+  <p class="sub">All responses are anonymous. Student ID is only used to verify participation.</p>
+
+  <div class="card">
+    <div class="field-label">Group number <span style="color:#999;font-weight:400;font-size:12px">(optional — only for CS1520 students)</span></div>
+    <input type="number" id="f-grp" placeholder="e.g. 3" min="1" max="30">
+  </div>
+  <div class="card">
+    <div class="field-label">Student ID *</div>
+    <input type="text" id="f-sid" placeholder="e.g. s1234567">
+  </div>
+
+  <div class="card">
+    <div class="field-label">Average daily social media use? *</div>
+    <div class="field-hint">Instagram, TikTok, YouTube, Snapchat, X, etc.</div>
+    <div id="rg-st">
+      <div class="radio-opt" onclick="pick('rg-st',this,'st','under1')"><span class="rdot"></span>Less than 1 hour</div>
+      <div class="radio-opt" onclick="pick('rg-st',this,'st','1to2')"><span class="rdot"></span>1–2 hours</div>
+      <div class="radio-opt" onclick="pick('rg-st',this,'st','2to4')"><span class="rdot"></span>2–4 hours</div>
+      <div class="radio-opt" onclick="pick('rg-st',this,'st','4to6')"><span class="rdot"></span>4–6 hours</div>
+      <div class="radio-opt" onclick="pick('rg-st',this,'st','over6')"><span class="rdot"></span>More than 6 hours</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="field-label">Platforms used most (pick up to 3)</div>
+    <div class="radio-grid" id="rg-pl">
+      <div class="radio-opt" onclick="multi(this,'pl','instagram')"><span class="rdot"></span>Instagram</div>
+      <div class="radio-opt" onclick="multi(this,'pl','tiktok')"><span class="rdot"></span>TikTok</div>
+      <div class="radio-opt" onclick="multi(this,'pl','youtube')"><span class="rdot"></span>YouTube</div>
+      <div class="radio-opt" onclick="multi(this,'pl','snapchat')"><span class="rdot"></span>Snapchat</div>
+      <div class="radio-opt" onclick="multi(this,'pl','x')"><span class="rdot"></span>X / Twitter</div>
+      <div class="radio-opt" onclick="multi(this,'pl','other')"><span class="rdot"></span>Other</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="field-label">Phone use during study sessions? *</div>
+    <div id="rg-sp">
+      <div class="radio-opt" onclick="pick('rg-sp',this,'sp','never')"><span class="rdot"></span>Never</div>
+      <div class="radio-opt" onclick="pick('rg-sp',this,'sp','sometimes')"><span class="rdot"></span>Sometimes</div>
+      <div class="radio-opt" onclick="pick('rg-sp',this,'sp','often')"><span class="rdot"></span>Often</div>
+      <div class="radio-opt" onclick="pick('rg-sp',this,'sp','always')"><span class="rdot"></span>Always</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="field-label">Sleep last night? *</div>
+    <div class="field-hint">Helps us account for confounding variables.</div>
+    <div id="rg-sl">
+      <div class="radio-opt" onclick="pick('rg-sl',this,'sl','under5')"><span class="rdot"></span>Less than 5 hours</div>
+      <div class="radio-opt" onclick="pick('rg-sl',this,'sl','5to6')"><span class="rdot"></span>5–6 hours</div>
+      <div class="radio-opt" onclick="pick('rg-sl',this,'sl','7to8')"><span class="rdot"></span>7–8 hours</div>
+      <div class="radio-opt" onclick="pick('rg-sl',this,'sl','over8')"><span class="rdot"></span>More than 8 hours</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="field-label">Field of study</div>
+    <select id="f-field">
+      <option value="">Select…</option>
+      <option value="cs">Computer Science / IT</option>
+      <option value="eng">Engineering</option>
+      <option value="science">Natural Sciences</option>
+      <option value="social">Social Sciences</option>
+      <option value="business">Business / Economics</option>
+      <option value="arts">Arts / Humanities</option>
+      <option value="other">Other</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <div class="field-label">What device are you using? *</div>
+    <div class="field-hint">This helps us account for device-related differences in reaction time.</div>
+    <div id="rg-dev">
+      <div class="radio-opt" onclick="pick('rg-dev',this,'dev','desktop')"><span class="rdot"></span>Desktop or laptop (mouse/trackpad)</div>
+      <div class="radio-opt" onclick="pick('rg-dev',this,'dev','tablet')"><span class="rdot"></span>Tablet (touchscreen)</div>
+      <div class="radio-opt" onclick="pick('rg-dev',this,'dev','mobile')"><span class="rdot"></span>Mobile phone (touchscreen)</div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" onclick="submitSurvey()">Continue to Memory Test →</button>
+  <p class="err" id="survey-err">Please answer all required fields (*) before continuing.</p>
+</div>
+</div>
+
+<!-- MEMORY -->
+<div id="s-memory" class="screen">
+<div class="wrap">
+  <div class="phase">Phase 2 of 4 — Memory Test</div>
+  <h2>Sequence Memory</h2>
+  <p class="sub">A sequence will appear — digits or letters. Memorize it, then type it back in order. 6 rounds.</p>
+  <div class="test-box" id="mem-box">
+
+    <div id="ms-intro">
+      <p class="instr">You'll see a sequence of digits or letters for 3 seconds. After they disappear, type them back in order. 6 rounds total — 3 digit rounds and 3 letter rounds.</p>
+      <button class="btn btn-primary" style="margin-top:16px" onclick="memStart()">Start Memory Test</button>
+    </div>
+
+    <div id="ms-cd" style="display:none">
+      <div class="countdown" id="mem-cd-num">3</div>
+      <p class="instr">Get ready…</p>
+    </div>
+
+    <div id="ms-show" style="display:none">
+      <p class="instr">Memorize this sequence:</p>
+      <div class="mem-seq" id="mem-seq-el"></div>
+      <p class="instr" id="mem-hide-txt"></p>
+    </div>
+
+    <div id="ms-recall" style="display:none">
+      <p class="instr">Type the digits in order:</p>
+      <div class="mem-inputs" id="mem-inp-row"></div>
+      <button class="btn btn-primary" style="margin-top:16px" onclick="memSubmit()">Submit</button>
+      <div id="mem-fb"></div>
+    </div>
+
+    <div id="ms-done" style="display:none">
+      <p style="font-size:20px;font-weight:700">Memory Test Complete ✓</p>
+      <p class="instr" id="mem-done-txt"></p>
+      <button class="btn btn-primary" style="margin-top:16px" onclick="goTo('s-reaction')">Next: Reaction Test →</button>
+    </div>
+
+  </div>
+  <div class="round-dots">
+    <div class="rdot-round" id="mr1"></div>
+    <div class="rdot-round" id="mr2"></div>
+    <div class="rdot-round" id="mr3"></div>
+    <div class="rdot-round" id="mr4"></div>
+    <div class="rdot-round" id="mr5"></div>
+    <div class="rdot-round" id="mr6"></div>
+  </div>
+</div>
+</div>
+
+<!-- REACTION -->
+<div id="s-reaction" class="screen">
+<div class="wrap">
+  <div class="phase">Phase 3 of 4 — Reaction Test</div>
+  <h2>Reaction Time</h2>
+  <p class="sub">Click the circle the moment it turns red. 5 rounds.</p>
+  <div class="test-box" id="rt-box">
+
+    <div id="rs-intro">
+      <p class="instr">A circle will appear below. When it turns <strong style="color:#ef4444">red</strong>, click it as fast as you can. Clicking too early resets the round.</p>
+      <button class="btn btn-primary" style="margin-top:16px" onclick="rtStart()">Start Reaction Test</button>
+    </div>
+
+    <div id="rs-active" style="display:none;flex-direction:column;align-items:center;gap:16px">
+      <p class="instr" id="rt-instr">Round 1 of 5 — wait for red…</p>
+      <div id="rt-circle" onclick="rtClick()">Wait…</div>
+      <div class="rt-chips" id="rt-chips"></div>
+    </div>
+
+    <div id="rs-done" style="display:none;flex-direction:column;align-items:center;gap:12px">
+      <p style="font-size:20px;font-weight:700">Reaction Test Complete ✓</p>
+      <div class="rt-avg" id="rt-avg-val"></div>
+      <p class="instr">Average reaction time</p>
+      <button class="btn btn-primary" onclick="goTo('s-pattern')">Next: Pattern Test →</button>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- PATTERN -->
+<div id="s-pattern" class="screen">
+<div class="wrap">
+  <div class="phase">Phase 4 of 4 — Pattern Test</div>
+  <h2>Pattern Recognition</h2>
+  <p class="sub">Find the rule in each sequence and select the correct next item. 6 questions.</p>
+  <div class="test-box" id="pt-box" style="min-height:300px">
+
+    <div id="ps-intro">
+      <p class="instr">Each question shows a sequence. Work out the rule and pick what comes next from the 4 options.</p>
+      <button class="btn btn-primary" style="margin-top:16px" onclick="ptStart()">Start Pattern Test</button>
+    </div>
+
+    <div id="ps-active" style="display:none;flex-direction:column;align-items:center;gap:14px;width:100%">
+      <div class="q-row"><span id="pt-qnum">Q1 / 6</span><span id="pt-qlive">Score: 0</span></div>
+      <p style="font-size:14px;font-weight:600">What comes next?</p>
+      <div class="pat-seq" id="pt-seq"></div>
+      <div class="pat-opts" id="pt-opts"></div>
+      <div id="pt-fb" style="min-height:32px"></div>
+    </div>
+
+    <div id="ps-done" style="display:none;flex-direction:column;align-items:center;gap:12px">
+      <p style="font-size:20px;font-weight:700">Pattern Test Complete ✓</p>
+      <p class="instr" id="pt-done-txt"></p>
+      <button class="btn btn-primary" onclick="showResults()">See Your Results →</button>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- RESULTS -->
+<div id="s-results" class="screen">
+<div class="wrap" style="text-align:center;padding-top:60px">
+  <div style="font-size:48px;margin-bottom:16px">🎉</div>
+  <div class="phase">Study Complete</div>
+  <h2 style="font-size:28px;margin-bottom:8px">Thank You!</h2>
+  <p class="sub" style="max-width:420px;margin:0 auto 32px">Your responses have been recorded. Here's a summary of how you performed across the three cognitive tests.</p>
+
+  <div class="results-grid" style="text-align:left;margin-bottom:24px">
+    <div class="res-card"><div class="res-label">Memory</div><div class="res-val c-purple" id="r-mem">—</div><div class="res-sub">out of 6 rounds</div></div>
+    <div class="res-card"><div class="res-label">Reaction Time</div><div class="res-val c-red" id="r-rt">—</div><div class="res-sub">avg milliseconds</div></div>
+    <div class="res-card"><div class="res-label">Pattern Score</div><div class="res-val c-green" id="r-pt">—</div><div class="res-sub">out of 6 questions</div></div>
+    <div class="res-card"><div class="res-label">Screen Time Tier</div><div class="res-val" id="r-tier">—</div><div class="res-sub" id="r-tier-sub"></div></div>
+  </div>
+
+  <div class="card" style="text-align:left;background:#eef2ff;border-color:#c7d2fe">
+    <p style="font-size:14px;color:#3730a3;line-height:1.7">Your data has been anonymously recorded for our CS1520 research project on social media use and cognitive performance. No personally identifiable information has been stored. Thank you for contributing to our study!</p>
+  </div>
+</div>
+</div>
+
+<script>
+// ── state ──
+var D = { sid:'',grp:'',st:'',pl:[],sp:'',sl:'',dev:'',field:'', memScore:0, memDigitScore:0, memLetterScore:0, rtTimes:[], rtAvg:0, ptScore:0 };
+
+// ── nav ──
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  var prog={'s-landing':0,'s-survey':15,'s-memory':40,'s-reaction':62,'s-pattern':82,'s-results':100};
+  document.getElementById('progress-bar').style.width=(prog[id]||0)+'%';
+}
+
+// ── radio ──
+function pick(gid,el,key,val){
+  document.querySelectorAll('#'+gid+' .radio-opt').forEach(function(o){o.classList.remove('selected')});
+  el.classList.add('selected');
+  D[key]=val;
+}
+var multiMap={};
+function multi(el,key,val){
+  if(!multiMap[key])multiMap[key]=[];
+  if(el.classList.contains('selected')){
+    el.classList.remove('selected');
+    multiMap[key]=multiMap[key].filter(function(v){return v!==val});
+  } else {
+    if(multiMap[key].length>=3)return;
+    el.classList.add('selected');
+    multiMap[key].push(val);
+  }
+  D[key]=multiMap[key];
+}
+
+// ── survey ──
+function submitSurvey(){
+  D.sid=document.getElementById('f-sid').value.trim();
+  D.grp=document.getElementById('f-grp').value.trim()||null;
+  D.field=document.getElementById('f-field').value;
+  var err=document.getElementById('survey-err');
+  if(!D.sid||!D.st||!D.sp||!D.sl||!D.dev){err.style.display='block';return}
+  err.style.display='none';
+  goTo('s-memory');
+}
+
+// ── memory ──
+var memRound=0, memSeqs=[], memTypes=[], memScores=[];
+var LETTERS='BCDFGHJKLMNPQRSTVWXYZ';
+function rndSeq(n){return Array.from({length:n},function(){return Math.floor(Math.random()*10)})}
+function rndLetterSeq(n){return Array.from({length:n},function(){return LETTERS[Math.floor(Math.random()*LETTERS.length)]})}
+
+function memStart(){
+  memRound=0;
+  memSeqs=[rndSeq(4),rndSeq(6),rndSeq(8),rndLetterSeq(4),rndLetterSeq(6),rndLetterSeq(8)];
+  memTypes=['digit','digit','digit','letter','letter','letter'];
+  memScores=[];
+  showMem('cd'); runCD('mem-cd-num', function(){showMemSeq()});
+}
+
+function runCD(elId,cb){
+  var c=3;
+  document.getElementById(elId).textContent=c;
+  var iv=setInterval(function(){
+    c--;
+    if(c<=0){clearInterval(iv);cb()}
+    else document.getElementById(elId).textContent=c;
+  },800);
+}
+
+function showMem(s){
+  ['intro','cd','show','recall','done'].forEach(function(x){
+    var el=document.getElementById('ms-'+x);
+    if(el)el.style.display='none';
+  });
+  var el=document.getElementById('ms-'+s);
+  if(el)el.style.display=(s==='recall'||s==='done'?'flex':'block');
+  if(s==='recall'||s==='done'){el.style.flexDirection='column';el.style.alignItems='center';el.style.gap='12px'}
+}
+
+function showMemSeq(){
+  showMem('show');
+  var seq=memSeqs[memRound];
+  var type=memTypes[memRound];
+  var el=document.getElementById('mem-seq-el');
+  el.innerHTML='';
+  seq.forEach(function(d){
+    var div=document.createElement('div');
+    div.className='mem-digit'; div.textContent=d; el.appendChild(div);
+  });
+  ['mr1','mr2','mr3','mr4','mr5','mr6'].forEach(function(id,i){
+    document.getElementById(id).className='rdot-round'+(i<=memRound?' done':'');
+  });
+  var label=type==='letter'?'Letter sequence':'Number sequence';
+  document.getElementById('mem-hide-txt').textContent=label+' — hiding in 3s…';
+  var t=3;
+  var iv=setInterval(function(){
+    t--;
+    if(t<=0){clearInterval(iv);showMemRecall()}
+    else document.getElementById('mem-hide-txt').textContent=label+' — hiding in '+t+'s…';
+  },1000);
+}
+
+function showMemRecall(){
+  showMem('recall');
+  var len=memSeqs[memRound].length;
+  var row=document.getElementById('mem-inp-row');
+  row.innerHTML='';
+  for(var i=0;i<len;i++){
+    var inp=document.createElement('input');
+    inp.type='text'; inp.maxLength=1; inp.className='mem-inp';
+    inp.dataset.idx=i;
+    (function(idx){
+      inp.addEventListener('input',function(){
+        if(this.value.length===1){
+          var next=row.querySelector('[data-idx="'+(idx+1)+'"]');
+          if(next)next.focus();
+        }
+      });
+    })(i);
+    row.appendChild(inp);
+  }
+  document.getElementById('mem-fb').innerHTML='';
+  row.children[0].focus();
+}
+
+function memSubmit(){
+  var seq=memSeqs[memRound];
+  var type=memTypes[memRound];
+  var inps=document.querySelectorAll('#mem-inp-row .mem-inp');
+  var ok=true;
+  inps.forEach(function(inp,i){
+    var entered=inp.value.trim().toUpperCase();
+    var expected=String(seq[i]).toUpperCase();
+    if(entered!==expected)ok=false;
+  });
+  memScores.push(ok?1:0);
+  var fb=document.getElementById('mem-fb');
+  fb.innerHTML=ok
+    ?'<div class="feedback fb-good">✓ Correct!</div>'
+    :'<div class="feedback fb-bad">✗ Sequence was: '+seq.join(' ')+'</div>';
+  memRound++;
+  setTimeout(function(){
+    if(memRound<6){showMem('cd');runCD('mem-cd-num',function(){showMemSeq()})}
+    else{
+      D.memScore=memScores.reduce(function(a,b){return a+b},0);
+      D.memDigitScore=memScores.slice(0,3).reduce(function(a,b){return a+b},0);
+      D.memLetterScore=memScores.slice(3,6).reduce(function(a,b){return a+b},0);
+      document.getElementById('mem-done-txt').textContent='You got '+D.memScore+' out of 6 correct ('+D.memDigitScore+'/3 digits, '+D.memLetterScore+'/3 letters).';
+      showMem('done');
+    }
+  },1600);
+}
+
+// ── reaction ──
+var rtRound=0, rtTO=null, rtT=null, rtWaiting=false;
+
+function rtStart(){
+  rtRound=0; D.rtTimes=[];
+  document.getElementById('rt-chips').innerHTML='';
+  showRS('active');
+  scheduleRT();
+}
+
+function showRS(s){
+  ['intro','active','done'].forEach(function(x){
+    var el=document.getElementById('rs-'+x);
+    if(el)el.style.display='none';
+  });
+  var el=document.getElementById('rs-'+s);
+  if(el)el.style.display=s==='active'||s==='done'?'flex':'block';
+  if(s==='active'||s==='done'){el.style.flexDirection='column';el.style.alignItems='center';el.style.gap='16px'}
+}
+
+function scheduleRT(){
+  var c=document.getElementById('rt-circle');
+  c.className='waiting'; c.textContent='Wait…';
+  document.getElementById('rt-instr').textContent='Round '+(rtRound+1)+' of 5 — wait for red…';
+  rtWaiting=true;
+  var delay=1500+Math.random()*3000;
+  rtTO=setTimeout(function(){
+    c.className='go'; c.textContent='Click!';
+    rtT=performance.now(); rtWaiting=false;
+  },delay);
+}
+
+function rtClick(){
+  if(rtWaiting){
+    clearTimeout(rtTO);
+    var c=document.getElementById('rt-circle');
+    c.className=''; c.textContent='Too early! Retrying…';
+    setTimeout(scheduleRT,1200);
+    return;
+  }
+  if(!rtT)return;
+  var t=Math.round(performance.now()-rtT);
+  D.rtTimes.push(t); rtT=null;
+  var c=document.getElementById('rt-circle');
+  c.className=''; c.textContent=t+' ms';
+  var chip=document.createElement('div');
+  chip.className='rt-chip';
+  chip.textContent='R'+(rtRound+1)+': '+t+'ms';
+  document.getElementById('rt-chips').appendChild(chip);
+  rtRound++;
+  if(rtRound>=5){
+    D.rtAvg=Math.round(D.rtTimes.reduce(function(a,b){return a+b})/D.rtTimes.length);
+    setTimeout(function(){
+      document.getElementById('rt-avg-val').textContent=D.rtAvg+' ms';
+      showRS('done');
+    },700);
+  } else {
+    setTimeout(scheduleRT,1000);
+  }
+}
+
+// ── pattern ──
+var PQ=[
+  {seq:'2, 4, 6, 8, ?',opts:['9','10','11','12'],ans:'10'},
+  {seq:'1, 4, 9, 16, ?',opts:['20','25','30','36'],ans:'25'},
+  {seq:'A, C, E, G, ?',opts:['H','I','J','K'],ans:'I'},
+  {seq:'3, 6, 12, 24, ?',opts:['36','42','48','60'],ans:'48'},
+  {seq:'🔴 🔵 🔴 🔵 ?',opts:['🟡','🔴','🔵','🟢'],ans:'🔴'},
+  {seq:'🟦 🟦 🟥 🟦 🟦 🟥 ?',opts:['🟦','🟥','🟩','🟨'],ans:'🟦'}
+];
+var ptQ=0,ptScore=0,ptLocked=false;
+
+function ptStart(){
+  ptQ=0;ptScore=0;
+  showPS('active');
+  renderPQ();
+}
+
+function showPS(s){
+  ['intro','active','done'].forEach(function(x){
+    var el=document.getElementById('ps-'+x);
+    if(el)el.style.display='none';
+  });
+  var el=document.getElementById('ps-'+s);
+  if(el)el.style.display=s==='active'||s==='done'?'flex':'block';
+  if(s==='active'||s==='done'){el.style.flexDirection='column';el.style.alignItems='center';el.style.gap='14px'}
+}
+
+function renderPQ(){
+  var q=PQ[ptQ];
+  ptLocked=false;
+  document.getElementById('pt-qnum').textContent='Q'+(ptQ+1)+' / '+PQ.length;
+  document.getElementById('pt-qlive').textContent='Score: '+ptScore;
+  document.getElementById('pt-seq').textContent=q.seq;
+  document.getElementById('pt-fb').innerHTML='';
+  var opts=document.getElementById('pt-opts');
+  opts.innerHTML='';
+  q.opts.forEach(function(o){
+    var div=document.createElement('div');
+    div.className='pat-cell'; div.textContent=o;
+    div.onclick=function(){answerPQ(div,o,q.ans)};
+    opts.appendChild(div);
+  });
+}
+
+function answerPQ(el,chosen,correct){
+  if(ptLocked)return; ptLocked=true;
+  var fb=document.getElementById('pt-fb');
+  if(chosen===correct){
+    el.classList.add('correct'); ptScore++;
+    fb.innerHTML='<div class="feedback fb-good">✓ Correct!</div>';
+  } else {
+    el.classList.add('wrong');
+    document.querySelectorAll('#pt-opts .pat-cell').forEach(function(c){
+      if(c.textContent===correct)c.classList.add('correct');
+    });
+    fb.innerHTML='<div class="feedback fb-bad">✗ Answer was '+correct+'</div>';
+  }
+  ptQ++;
+  setTimeout(function(){
+    if(ptQ<PQ.length)renderPQ();
+    else{
+      D.ptScore=ptScore;
+      document.getElementById('pt-done-txt').textContent='You got '+ptScore+' out of '+PQ.length+' correct.';
+      showPS('done');
+    }
+  },1400);
+}
+
+// ── results ──
+function tier(){
+  return {under1:'Low','1to2':'Low','2to4':'Medium','4to6':'High',over6:'High'}[D.st]||'Unknown';
+}
+function stLabel(){
+  return {under1:'<1 hr/day','1to2':'1–2 hrs/day','2to4':'2–4 hrs/day','4to6':'4–6 hrs/day',over6:'>6 hrs/day'}[D.st]||'—';
+}
+
+function submitToSheet(t){
+  var url='https://script.google.com/macros/s/AKfycbx76FxPO1vIoJ1h7tv497EDbfmumMmBewFpkw-cE7YhTvIqztXy1YIvB1k35OdlT06-/exec';
+  var payload={
+    student_id:D.sid,
+    group_num:D.grp,
+    screentime_raw:D.st, screentime_tier:t,
+    platforms:(D.pl||[]).join('+'),
+    study_phone:D.sp, sleep:D.sl, field:D.field,
+    memory_score:D.memScore,
+    memory_digit_score:D.memDigitScore,
+    memory_letter_score:D.memLetterScore,
+    reaction_times:D.rtTimes.join('|'),
+    avg_reaction_ms:D.rtAvg,
+    device:D.dev,
+    pattern_score:D.ptScore
+  };
+  fetch(url,{method:'POST',body:JSON.stringify(payload)}).catch(function(){});
+}
+
+function showResults(){
+  goTo('s-results');
+  var t=tier();
+  submitToSheet(t);
+  document.getElementById('r-mem').textContent=D.memScore+' / 6';
+  document.getElementById('r-rt').textContent=(D.rtAvg||'—')+' ms';
+  document.getElementById('r-pt').textContent=D.ptScore+' / 6';
+  var tv=document.getElementById('r-tier');
+  tv.textContent=t;
+  tv.className='res-val '+(t==='Low'?'c-green':t==='Medium'?'c-purple':'c-red');
+  document.getElementById('r-tier-sub').textContent=stLabel();
+}
+</script>
+</body>
+</html>
