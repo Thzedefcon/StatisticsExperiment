@@ -132,6 +132,9 @@ select{cursor:pointer}
   </div>
   <button class="btn btn-primary" onclick="goTo('s-survey')">Begin Study →</button>
   <p style="margin-top:12px;font-size:13px;color:#999">Anonymous · Student ID only · ~5–8 minutes</p>
+  <div style="margin-top:32px;max-width:480px;margin-left:auto;margin-right:auto;background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:14px 18px;text-align:left">
+    <p style="font-size:12px;color:#92400e;line-height:1.6"><strong>Disclosure:</strong> This experiment webpage was built using Claude AI (claude.ai) to streamline the development process. Webpage development is not part of the CS1520 Statistics curriculum — the AI tool was used solely to create this interface, while all research design, data analysis, and statistical interpretation was conducted by our group.</p>
+  </div>
 </div>
 </div>
 
@@ -305,11 +308,11 @@ select{cursor:pointer}
 <div class="wrap">
   <div class="phase">Phase 4 of 4 — Pattern Test</div>
   <h2>Pattern Recognition</h2>
-  <p class="sub">Find the rule in each sequence and select the correct next item. 6 questions.</p>
+  <p class="sub">Find the rule in each sequence and select the correct next item. 9 questions.</p>
   <div class="test-box" id="pt-box" style="min-height:300px">
 
     <div id="ps-intro">
-      <p class="instr">Each question shows a sequence. Work out the rule and pick what comes next from the 4 options.</p>
+      <p class="instr">Each question shows a sequence. Work out the rule and pick what comes next from the 4 options. 9 questions total — they get harder as you go.</p>
       <button class="btn btn-primary" style="margin-top:16px" onclick="ptStart()">Start Pattern Test</button>
     </div>
 
@@ -342,7 +345,7 @@ select{cursor:pointer}
   <div class="results-grid" style="text-align:left;margin-bottom:24px">
     <div class="res-card"><div class="res-label">Memory</div><div class="res-val c-purple" id="r-mem">—</div><div class="res-sub">out of 6 rounds</div></div>
     <div class="res-card"><div class="res-label">Reaction Time</div><div class="res-val c-red" id="r-rt">—</div><div class="res-sub">avg milliseconds</div></div>
-    <div class="res-card"><div class="res-label">Pattern Score</div><div class="res-val c-green" id="r-pt">—</div><div class="res-sub">out of 6 questions</div></div>
+    <div class="res-card"><div class="res-label">Pattern Score</div><div class="res-val c-green" id="r-pt">—</div><div class="res-sub">out of 9 questions</div></div>
     <div class="res-card"><div class="res-label">Screen Time Tier</div><div class="res-val" id="r-tier">—</div><div class="res-sub" id="r-tier-sub"></div></div>
   </div>
 
@@ -572,7 +575,10 @@ var PQ=[
   {seq:'A, C, E, G, ?',opts:['H','I','J','K'],ans:'I'},
   {seq:'3, 6, 12, 24, ?',opts:['36','42','48','60'],ans:'48'},
   {seq:'🔴 🔵 🔴 🔵 ?',opts:['🟡','🔴','🔵','🟢'],ans:'🔴'},
-  {seq:'🟦 🟦 🟥 🟦 🟦 🟥 ?',opts:['🟦','🟥','🟩','🟨'],ans:'🟦'}
+  {seq:'🟦 🟦 🟥 🟦 🟦 🟥 ?',opts:['🟦','🟥','🟩','🟨'],ans:'🟦'},
+  {seq:'1, 2, 4, 7, 11, ?',opts:['14','15','16','17'],ans:'16'},
+  {seq:'2, 6, 12, 20, 30, ?',opts:['40','42','44','46'],ans:'42'},
+  {seq:'A, Z, B, Y, C, ?',opts:['D','W','X','V'],ans:'X'}
 ];
 var ptQ=0,ptScore=0,ptLocked=false;
 
@@ -666,7 +672,7 @@ function showResults(){
   submitToSheet(t);
   document.getElementById('r-mem').textContent=D.memScore+' / 6';
   document.getElementById('r-rt').textContent=(D.rtAvg||'—')+' ms';
-  document.getElementById('r-pt').textContent=D.ptScore+' / 6';
+  document.getElementById('r-pt').textContent=D.ptScore+' / 9';
   var tv=document.getElementById('r-tier');
   tv.textContent=t;
   tv.className='res-val '+(t==='Low'?'c-green':t==='Medium'?'c-purple':'c-red');
